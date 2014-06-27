@@ -78,9 +78,12 @@ def getlogonHist(reg_soft):
                     # This is a terrible way to parse the groups, but it works for now...
                     # I was getting unicode errors on the Asian group names in my test hive.
                     # So I added the encode ignore in there for now...
+                    # You can remove the ''' and the pass and it should work for you.
                     ########################################################################
                     for v in sks.values():
                         if "group" in v.name():
+                            pass
+                            '''
                             g = v.value()
                             for group in g:
                                 if 'CN' in group:
@@ -88,6 +91,7 @@ def getlogonHist(reg_soft):
                                         print '\t' + group.split('CN=')[1].split(',OU')[0].encode('ascii', 'ignore')
                                     else:
                                         print '\t' + group.split('CN=')[1].rstrip(',').encode('ascii', 'ignore')
+                            '''
                         else:
                             time = v.name()
                             htime = datetime.fromtimestamp(int(time)).strftime('%Y-%m-%d %H:%M:%S')
