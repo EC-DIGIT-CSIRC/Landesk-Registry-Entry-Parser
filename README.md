@@ -5,6 +5,8 @@ I was on a forensics case and saw that there was no entries in the MFT (event lo
 
 Then I started playing around with the hive and realized there was a lot of value in these entries.
 
+This is the software: http://www.landesk.com
+
 How to Install
 ===============
 
