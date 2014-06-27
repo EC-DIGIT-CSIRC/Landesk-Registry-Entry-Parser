@@ -28,6 +28,7 @@ Running
 =========
 
 python landesk-parse.py -h
+              
               usage: landesk-parse.py [-h] [-soft SOFTWARE]
 
               Parse the Landesk Entries in the Registry.
