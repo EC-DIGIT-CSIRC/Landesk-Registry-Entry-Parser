@@ -27,21 +27,12 @@ Twitter: @patrickrolsen
 
 Thanks to: https://github.com/williballenthin/python-registry
 '''
+
 from __future__ import division
 import base64, binascii, struct, sys
 import argparse
 from Registry import Registry
 from datetime import datetime, timedelta
-
-parser = argparse.ArgumentParser(description='Parse the Landesk Entries in the Registry.')
-parser.add_argument('-soft', '--software', help='Path to the SOFTWARE hive you want parsed.')
-
-args = parser.parse_args()
-
-if args.software:
-    reg_soft = Registry.Registry(args.software)
-else:
-    print "You need to specify a SOFTWARE hive."
 
 def gethostInfo(reg_soft):
     print ("\n" + ("=" * 51) + "\nHost Information\n" + ("=" * 51))
@@ -95,7 +86,7 @@ def getlogonHist(reg_soft):
                         else:
                             time = v.name()
                             htime = datetime.fromtimestamp(int(time)).strftime('%Y-%m-%d %H:%M:%S')
-                            logins = '%s logged in at %s' % (v.value().split('=')[1].split(',')[0], htime)
+                            logins = '%s logged in at %s' % (v.value().partition(",")[0][3:], htime)
                             print logins
         except Registry.RegistryKeyNotFoundException as e:
             pass
@@ -117,8 +108,7 @@ def getmonitorLog(reg_soft):
                 # LWrite = Last Write.
                 print 'Key LWrite: %s' % (key_time)
                 try:
-                    last_start_hex = binascii.hexlify((key.value("Last Started").value(), 16)[0])
-                    time_convert = struct.unpack("<Q", binascii.unhexlify(last_start_hex))[0]
+                    time_convert = struct.unpack("<Q", key.value("Last Started").value())[0]
                     # http://stackoverflow.com/questions/4869769/convert-64-bit-windows-date-time-in-python
                     us = int(time_convert) / 10
                     last_run = datetime(1601,1,1) + timedelta(microseconds=us)
@@ -127,8 +117,7 @@ def getmonitorLog(reg_soft):
                     last_run = "No last runs..."
                     print 'Last Run: %s' % (last_run)
                 try:
-                    first_start_hex = binascii.hexlify((key.value("First Started").value(), 16)[0])
-                    time_convert = struct.unpack("<Q", binascii.unhexlify(first_start_hex))[0]
+                    time_convert = struct.unpack("<Q", key.value("First Started").value())[0]
                     us = int(time_convert) / 10
                     first_run = datetime(1601,1,1) + timedelta(microseconds=us)
                     print 'First Run: %s' % (first_run)
@@ -136,14 +125,14 @@ def getmonitorLog(reg_soft):
                     first_run = "No first run..."
                     print 'First Run: %s' % (first_run)
                 try:
-                    last_duration = struct.unpack("<Q", binascii.unhexlify(binascii.hexlify(key.value("Last Duration").value())))[0]
+                    last_duration = struct.unpack("<Q", key.value("Last Duration").value())[0]
                     lduration = last_duration / 10000000
                     print 'Last Duration: %s' % (lduration)
                 except:
                     lduration = "No duration..."
                     print 'Last Duration: %s' % (lduration)
                 try:
-                    total_duration = struct.unpack("<Q", binascii.unhexlify(binascii.hexlify(key.value("Total Duration").value())))[0]
+                    total_duration = struct.unpack("<Q", key.value("Total Duration").value())[0]
                     tduration = total_duration / 10000000
                     print 'Total Duration: %s' % (tduration)
                 except:
@@ -166,6 +155,16 @@ def getmonitorLog(reg_soft):
             pass
 
 def main():
+    parser = argparse.ArgumentParser(description='Parse the Landesk Entries in the Registry.')
+    parser.add_argument('-soft', '--software', help='Path to the SOFTWARE hive you want parsed.')
+
+    args = parser.parse_args()
+
+    if args.software:
+        reg_soft = Registry.Registry(args.software)
+    else:
+        print "You need to specify a SOFTWARE hive."
+
     gethostInfo(reg_soft)
     getlogonHist(reg_soft)
     getmonitorLog(reg_soft)
