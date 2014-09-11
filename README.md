@@ -43,76 +43,10 @@ python landesk-parse.py -soft SOFTWARE
 Output Example
 ===============
 
-              ===================================================
-              Host Information
-              ===================================================
-              Hostname: TESTMACHINE
-              IP Addr: 10.10.10.10
-
-              ===================================================
-              Login History
-              ===================================================
-              <user_name> logged in at 2014-05-21 09:45:49
-                      GROUP1
-                      GROUP2
-                      GROUP3
-                      ETC....
-              <user_name> logged in at 2014-05-22 09:45:49
-                      GROUP1
-                      GROUP2
-                      GROUP3
-                      ETC....
-              <user_name> logged in at 2014-05-23 09:45:49
-                      GROUP1
-                      GROUP2
-                      GROUP3
-                      ETC.... 
-
-              ===================================================
-              Application Log
-              ===================================================
-              <snip>
-              App Name: C:/Windows/System32/gse.exe
-              Key LWrite: 2013-03-13 08:59:00.802603
-              Last Run: 2013-03-13 08:59:00.092000
-              First Run: 2013-03-13 08:59:00.092000
-              Last Duration: 0.71
-              Total Duration: 0.71
-              Current User: SYSTEM
-              Run count: 1
-
-              App Name: C:/Windows/System32/gsec.exe
-              Key LWrite: 2013-04-11 07:57:01.265898
-              Last Run: 2013-04-11 07:57:00.795000
-              First Run: 2013-04-11 07:57:00.795000
-              Last Duration: 0.47
-              Total Duration: 0.47
-              Current User: SYSTEM
-              Run count: 1
-
-              <snip>
-
-Todo
-=======
-Key
-
-- X = Done
-- O = Partially done and implemented
-- [ ] = Not started
-
-[ ] Output
-
-- [ ] Jinja2 Templates
-- [ ] JSON as default (then include a JSON to CSV script as well.)
-
-[ ] Groups
-- [ ] Better handling of the user logon groups. It's simple if statements now...
-
-[ ] Errors
-- [ ] Some keys are customs and will be unique to companies/people so I need to figure out a way to take these "useful" ones into account.
-
-[ ] Testing
-- [ ] I've only tested two hives.... So I could use some more hives if anyone has some that I can use.
+              Application Name,Host Name,IP Address,Total Runs,Last Write,First Run,Last Run,Last Running Duration,Total Running Duration,Curernt User
+              C:/MPSigStub.exe,<hostname>,<ip_addr>,2013-04-09 01:57:36.905449,2013-04-09 01:57:30.175000,2013-04-09 01:57:30.175000,6.73,6.73,<current_user>
+              //mehmeh/netlogon/IFMEMBER.EXE,<hostname>,<ip_addr>,2014-05-16 00:56:43.197462,2012-07-02 00:42:13.751000,2014-05-16 00:56:42.125000,1.072,5.788,<current_user>
+              C:/Windows/System32/sethc.exe,<hostname>,<ip_addr>,1,2012-09-12 08:51:08.714193,2012-09-12 08:50:54.984000,2012-09-12 08:50:54.984000,13.73,13.73,<current_user>
 
 Thanks to:
 ==============
