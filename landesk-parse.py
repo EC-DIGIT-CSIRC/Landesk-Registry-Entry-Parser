@@ -113,7 +113,7 @@ def outputResults(output, hosts):
     LDwriter = csv.writer(sys.stdout)
     LDwriter.writerow(["Application Name", "Host Name", "IP Address", "Total Runs", "Last Write", "First Run", \
                         "Last Run", "Last Running Duration", "Total Running Duration", \
-                        "Curernt User"])
+                        "Current User"])
     for key, value in output.iteritems():
         LDwriter.writerow([key, hosts[0], hosts[1], value[0], value[1], value[2], \
                             value[3], value[4], value[5], value[6]])
