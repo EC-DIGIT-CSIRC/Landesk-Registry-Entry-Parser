@@ -45,11 +45,24 @@ import csv
 import sqlite3
 
 def getSQLiteCacheInfo(sqlite_path):
-    conn = sqlite3.connect("sqlite_path")
-    return 
+    conn = sqlite3.connect(sqlite_path)
+    tables = [
+                "ClientOperations",
+                "LastPolicyResponse",
+                "LastPolicyTargets",
+                "PackageDownloadInfo",
+                "RemoteOperation",
+                "Targets",
+                "TaskHistory"]
+    cacheInfo = {}
+    for table in tables:
+        cacheInfo[table] = extractAllFromTable(conn, table)
+    return cacheInfo
 
-def extractClientOperations(sqlite):
-    return
+def extractAllFromTable(sqlite, table):
+    cursor = sqlite.cursor()
+    cursor.execute("SELECT `_rowid_`,* FROM `%s`;" % (table))
+    return cursor.fetchall()
 
 def getLogonInfo(reg_soft):
     entries = ["Wow6432Node\\Landesk\\Inventory\\LogonHistory\\Logons",
@@ -224,7 +237,16 @@ def main():
 
     # Parse local sqlite cache
     if args.ldclient:   
-        print("DEBUG - HERE PARSING OF SQLITE FILE")
+        cacheinfo = getSQLiteCacheInfo(args.ldclient)
+        for key in cacheinfo.keys():
+            if(directory is not None):
+                outfile = open("%s/%s.csv" % (directory, key), "w") 
+
+            table = cacheinfo[key]
+            outfile.write("%s\n" % (table))
+
+            if(directory is not None):
+                outfile.close()
 
     # One or both option should be set, otherwise, print the manual ;)
     if not args.software and not args.ldclient:
