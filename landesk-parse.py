@@ -27,17 +27,29 @@ Twitter: @patrickrolsen
 
 Thanks to: https://github.com/williballenthin/python-registry
 
+Revision History:
+    - 20th October 2015 - getLogonInfo() added by David Durvaux (@ddurvaux - david@autopsit.org)
+    - 27th October 2015 - add support for local sqlite file by David Durvaux (@ddurvaux - david@autopsit.org)
 
-History:
-    - October 2015 - getLogonInfo() added by David Durvaux (@ddurvaux)
+TODO:
+    - add XML PARSING  
+    - add correlation between registry, sqlite and XML files
 '''
 
 from __future__ import division
-import base64, binascii, struct, sys
+import base64, binascii, struct, sys, os
 import argparse
 from Registry import Registry
 from datetime import datetime, timedelta
 import csv
+import sqlite3
+
+def getSQLiteCacheInfo(sqlite_path):
+    conn = sqlite3.connect("sqlite_path")
+    return 
+
+def extractClientOperations(sqlite):
+    return
 
 def getLogonInfo(reg_soft):
     entries = ["Wow6432Node\\Landesk\\Inventory\\LogonHistory\\Logons",
@@ -153,8 +165,8 @@ def getMonitorLog(reg_soft):
         except Registry.RegistryKeyNotFoundException as e:
             pass
 
-def outputResults(output, hosts):
-    LDwriter = csv.writer(sys.stdout)
+def outputResults(output, hosts, outfile=sys.stdout):
+    LDwriter = csv.writer(outfile)
     LDwriter.writerow(["Application Name", "Host Name", "IP Address", "Total Runs", "Last Write", "First Run", \
                         "Last Run", "Last Running Duration", "Total Running Duration", \
                         "Current User"])
@@ -162,8 +174,8 @@ def outputResults(output, hosts):
         LDwriter.writerow([key, hosts[0], hosts[1], value[0], value[1], value[2], \
                             value[3], value[4], value[5], value[6]])
 
-def outputLogons(logons):
-    LDwriter = csv.writer(sys.stdout)
+def outputLogons(logons, outfile=sys.stdout):
+    LDwriter = csv.writer(outfile)
     LDwriter.writerow(["Time", "User", "User Account", "Groups"])
 
     for [time, user, account, groups] in logons:
@@ -171,22 +183,53 @@ def outputLogons(logons):
 
 
 def main():
+    # Argument definition
     parser = argparse.ArgumentParser(description='Parse the Landesk Entries in the Registry.')
     parser.add_argument('-soft', '--software', help='Path to the SOFTWARE hive you want parsed.')
+    parser.add_argument('-ldc', '--ldclient', help='Path to the LDClientdB.db3 file you want parsed.')
+    parser.add_argument('-out', '--output_directory', help='Directory where to wrote all information extracted from Landesk (by default stdout)')
 
     args = parser.parse_args()
 
+    # Check if an output directory is set
+    directory = None
+    outfile = None
+    if args.output_directory:
+        directory = os.path.dirname(args.output_directory)
+        if not os.path.exists(directory):
+                os.makedirs(directory)
+    else:
+        outfile = sys.stdout
+
+    # Parse registry entry of Landesk
     if args.software:
         reg_soft = Registry.Registry(args.software)
-    else:
-        print "You need to specify a SOFTWARE hive."
 
-    logons = getLogonInfo(reg_soft)
-    outputLogons(logons)
-    
-    hosts = gethostInfo(reg_soft)
-    output = getMonitorLog(reg_soft)
-    outputResults(output, hosts)
+        # Parse logon informations
+        if(directory is not None):
+            outfile = open("%s/%s" % (directory, "logons.csv"), "w") 
+        logons = getLogonInfo(reg_soft)
+        outputLogons(logons, outfile)
+        if(directory is not None):
+            outfile.close()
+
+        # Parse hosts and monitor log    
+        if(directory is not None):
+            outfile = open("%s/%s" % (directory, "host-and-monitor.csv"), "w") 
+        hosts = gethostInfo(reg_soft)
+        output = getMonitorLog(reg_soft)
+        outputResults(output, hosts, outfile)
+        if(directory is not None):
+            outfile.close()
+
+    # Parse local sqlite cache
+    if args.ldclient:   
+        print("DEBUG - HERE PARSING OF SQLITE FILE")
+
+    # One or both option should be set, otherwise, print the manual ;)
+    if not args.software and not args.ldclient:
+        print "You need to specify a SOFTWARE hive or a SQLITE file."
+
 if __name__ == "__main__":
     main()
     
