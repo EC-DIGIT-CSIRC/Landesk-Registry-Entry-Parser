@@ -27,6 +27,7 @@ Done...
 Running
 =========
 
+```
 usage: landesk-parse.py [-h] [-soft SOFTWARE] [-ldc LDCLIENT] [-out OUTPUT_DIRECTORY]
 
 Parse the Landesk Entries in the Registry.
@@ -39,7 +40,7 @@ optional arguments:
                         Path to the LDClientdB.db3 file you want parsed.
   -out OUTPUT_DIRECTORY, --output_directory OUTPUT_DIRECTORY
                         Directory where to wrote all information extracted from Landesk (by default stdout)
-
+```
 
 Output Example
 ===============
