@@ -27,20 +27,23 @@ Done...
 Running
 =========
 
-python landesk-parse.py -h
-              
-              usage: landesk-parse.py [-h] [-soft SOFTWARE]
+usage: landesk-parse.py [-h] [-soft SOFTWARE] [-ldc LDCLIENT] [-out OUTPUT_DIRECTORY]
 
-              Parse the Landesk Entries in the Registry.
+Parse the Landesk Entries in the Registry.
 
-              optional arguments:
-                -h, --help            show this help message and exit
-                -soft SOFTWARE, --software SOFTWARE
-                                      Path to the SOFTWARE hive you want parsed.
+optional arguments:
+  -h, --help            show this help message and exit
+  -soft SOFTWARE, --software SOFTWARE
+                        Path to the SOFTWARE hive you want parsed.
+  -ldc LDCLIENT, --ldclient LDCLIENT
+                        Path to the LDClientdB.db3 file you want parsed.
+  -out OUTPUT_DIRECTORY, --output_directory OUTPUT_DIRECTORY
+                        Directory where to wrote all information extracted from Landesk (by default stdout)
+
 
 Output Example
 ===============
-              python landesk-parse.py -soft SOFTWARE
+              python landesk-parse.py -soft SOFTWARE -ldc /mnt/drives/c/ProgramData/LANDesk/ManagementSuite/Database/LDClientDB.db3 -out ./demo/
 
               Application Name,Host Name,IP Address,Total Runs,Last Write,First Run,Last Run,Last Running Duration,Total Running Duration,Curernt User
               C:/MPSigStub.exe,<hostname>,<ip_addr>,2013-04-09 01:57:36.905449,2013-04-09 01:57:30.175000,2013-04-09 01:57:30.175000,6.73,6.73,<current_user>
