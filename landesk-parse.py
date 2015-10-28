@@ -61,8 +61,22 @@ def getSQLiteCacheInfo(sqlite_path):
 
 def extractAllFromTable(sqlite, table):
     cursor = sqlite.cursor()
-    cursor.execute("SELECT `_rowid_`,* FROM `%s`;" % (table))
-    return cursor.fetchall()
+    
+    # get columns names
+    cursor.execute("PRAGMA table_info(%s);" % (table))
+    columns = []
+    data = []
+    for [cid, name, ctype, notnull, dflt_value, pk] in cursor.fetchall():
+        columns.append(name)
+    data.append(columns)
+
+    # get data
+    cursor.execute("SELECT * FROM `%s`;" % (table))
+    for row in cursor.fetchall():
+        data.append(row)
+        
+    # return all
+    return data
 
 def getLogonInfo(reg_soft):
     entries = ["Wow6432Node\\Landesk\\Inventory\\LogonHistory\\Logons",
@@ -178,6 +192,12 @@ def getMonitorLog(reg_soft):
         except Registry.RegistryKeyNotFoundException as e:
             pass
 
+def outputSQLResults(table, outfile=sys.stdout):
+    LDWriter = csv.writer(outfile)
+    LDWriter.writerow(table[0])
+    for row in table[1:]:
+        LDWriter.writerow(row)
+
 def outputResults(output, hosts, outfile=sys.stdout):
     LDwriter = csv.writer(outfile)
     LDwriter.writerow(["Application Name", "Host Name", "IP Address", "Total Runs", "Last Write", "First Run", \
@@ -243,7 +263,7 @@ def main():
                 outfile = open("%s/%s.csv" % (directory, key), "w") 
 
             table = cacheinfo[key]
-            outfile.write("%s\n" % (table))
+            outputSQLResults(table, outfile)
 
             if(directory is not None):
                 outfile.close()
