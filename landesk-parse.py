@@ -28,12 +28,13 @@ Twitter: @patrickrolsen
 Thanks to: https://github.com/williballenthin/python-registry
 
 Revision History:
-    - 20th October 2015 - getLogonInfo() added by David Durvaux (@ddurvaux - david@autopsit.org)
-    - 27th October 2015 - add support for local sqlite file by David Durvaux (@ddurvaux - david@autopsit.org)
+    - 20th October 2015 - getLogonInfo() added by David Durvaux (@ddurvaux - david@autopsit.org) for EC DIGIT CSIRC
+    - 27th October 2015 - add support for local sqlite file by David Durvaux (@ddurvaux - david@autopsit.org) for EC DIGIT CSIRC
 
 TODO:
-    - add XML PARSING  
+    - add XML PARSING  (c/ProgramData/LANDesk/ManagementSuite/landesk/files)
     - add correlation between registry, sqlite and XML files
+    - support for PLASO
 '''
 
 from __future__ import division
@@ -43,6 +44,10 @@ from Registry import Registry
 from datetime import datetime, timedelta
 import csv
 import sqlite3
+
+def parseXMLFiles(path):
+    #TODO
+    return
 
 def getSQLiteCacheInfo(sqlite_path):
     conn = sqlite3.connect(sqlite_path)
@@ -220,7 +225,9 @@ def main():
     parser = argparse.ArgumentParser(description='Parse the Landesk Entries in the Registry.')
     parser.add_argument('-soft', '--software', help='Path to the SOFTWARE hive you want parsed.')
     parser.add_argument('-ldc', '--ldclient', help='Path to the LDClientdB.db3 file you want parsed.')
+    parser.add_argument('-xml', '--xml_repository', help='Path to the XML directory of Landesk.')
     parser.add_argument('-out', '--output_directory', help='Directory where to wrote all information extracted from Landesk (by default stdout)')
+
 
     args = parser.parse_args()
 
@@ -267,10 +274,15 @@ def main():
 
             if(directory is not None):
                 outfile.close()
+    
+    # Parse local XML cache
+    if args.xml_repository:
+        xmlcache = parseXMLFiles(args.xml_repository)
+        #TOOD write result
 
     # One or both option should be set, otherwise, print the manual ;)
-    if not args.software and not args.ldclient:
-        print "You need to specify a SOFTWARE hive or a SQLITE file."
+    if not args.software and not args.ldclient and not args.xml_repository:
+        print "You need to specify a SOFTWARE hive and/or a SQLITE file and/or a XML repository."
 
 if __name__ == "__main__":
     main()
