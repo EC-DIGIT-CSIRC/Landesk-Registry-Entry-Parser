@@ -27,9 +27,12 @@ Twitter: @patrickrolsen
 
 Thanks to: https://github.com/williballenthin/python-registry
 
-Revision History:
-    - 20th October 2015 - getLogonInfo() added by David Durvaux (@ddurvaux - david@autopsit.org) for EC DIGIT CSIRC
-    - 27th October 2015 - add support for local sqlite file by David Durvaux (@ddurvaux - david@autopsit.org) for EC DIGIT CSIRC
+Revision History of changes done by David Durvaux for EC DIGIT CSIRC:
+  (Twitter: @ddurvaux - Email: david@autopsit.org)
+    - 20th October 2015 
+        - getLogonInfo() added
+    - 27th October 2015 
+        - add support for local sqlite file
 
 TODO:
     - add XML PARSING  (c/ProgramData/LANDesk/ManagementSuite/landesk/files)
