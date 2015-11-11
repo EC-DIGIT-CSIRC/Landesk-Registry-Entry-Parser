@@ -47,10 +47,43 @@ from Registry import Registry
 from datetime import datetime, timedelta
 import csv
 import sqlite3
+import xml.etree.ElementTree as ET
 
 def parseXMLFiles(path):
-    #TODO
-    return
+    cacheXML = {}
+    for path, dirs, files in os.walk(path):
+        for filename in files:
+            fullpath = os.path.join(path, filename)
+            basename = filename.split(".")[0]
+
+            try:
+                tree = ET.parse(fullpath)
+                root = tree.getroot() 
+
+                cacheXML[basename] = {}
+                # 2 types of XML (hash XML and task XML)
+                # extracting elements of interest
+                if(root.find(".//RemoteOperation") is not None):
+                    ros = root.findall(".//RemoteOperation")
+                    for remoteOperation in ros:
+                        cacheXML[basename][remoteOperation.get("Identifier")] = {}
+                        for k in remoteOperation.keys():
+                            v = remoteOperation.get(k)
+                            if(k in cacheXML[basename][remoteOperation.get("Identifier")]):
+                                if(not isinstance(cacheXML[basename][remoteOperation.get("Identifier")], list)):
+                                    cacheXML[basename][remoteOperation.get("Identifier")][k] = [cacheXML[basename][remoteOperation.get("Identifier")][k]]
+                                cacheXML[basename][remoteOperation.get("Identifier")][k].append(v)
+                            else:
+                                cacheXML[basename][remoteOperation.get("Identifier")][k] = v                        
+                else:
+                    # this is to support other XML (mostly hashes)
+                    # but those files are actually invalid XML and this code
+                    # will probably never be executed
+                    print("DEBUG: this file is a hash file (%s)" % fullpath)
+                    print("    Hash files aren't valid XML files and still unsupported by this script")
+            except ET.ParseError:
+                print("ERROR: fail to parse (invalid XML): %s" % (fullpath))
+    return cacheXML
 
 def getSQLiteCacheInfo(sqlite_path):
     conn = sqlite3.connect(sqlite_path)
@@ -104,7 +137,7 @@ def getLogonInfo(reg_soft):
                     continue
 
                 # Rebuild information on users
-                # WARNING: the current key_time value correspond to the lat
+                # WARNING: the current key_time value correspond to the last
                 #          update time of the Logons entry.  It should be change
                 #          to correspond to sub-key value but I'm still searching
                 #          for the write way to do it.
@@ -282,6 +315,7 @@ def main():
     if args.xml_repository:
         xmlcache = parseXMLFiles(args.xml_repository)
         #TOOD write result
+        print("DEBUG: XMLCache = %s" % xmlcache)
 
     # One or both option should be set, otherwise, print the manual ;)
     if not args.software and not args.ldclient and not args.xml_repository:
