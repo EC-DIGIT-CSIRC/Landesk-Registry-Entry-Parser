@@ -33,6 +33,8 @@ Revision History of changes done by David Durvaux for EC DIGIT CSIRC:
         - getLogonInfo() added
     - 27th October 2015 
         - add support for local sqlite file
+    - 11th November 2015
+        - add basic support for XML files
 
 TODO:
     - add XML PARSING  (c/ProgramData/LANDesk/ManagementSuite/landesk/files)
@@ -48,7 +50,46 @@ from datetime import datetime, timedelta
 import csv
 import sqlite3
 import xml.etree.ElementTree as ET
+import re
 
+# XML Parser for Landesk .xml files
+# -- tasks XML are not valid XML and requires a specific parser
+class LandeskXMLParser:
+
+    #Idea: implement a recursive function that will loop until </ is found
+    #Use pattern matching to match beginning and end of XML tags
+    begin_pattern = "<(?P<tag>\w+)(\s*(?P<id>\w+)=\"(?P<value>\w+)\")*>"
+    end_pattern = "<\\(?P<tag>%s)>"
+    xmlfh = None
+
+    def __init__(self, filename):
+        self.open(filename)
+
+    def open(self, xmlpath):
+        self.xmlfh = open(xmlpath, "r")
+
+    def close(self):
+        self.xmlfh.close()
+        return
+
+    def parse(self, xmlstruct, tag=""):
+
+        # TODO handle cas where both beginning and end of tag stay on same line
+
+        for line in self.xmlfh:
+            # pattern to match begining
+            # if new tag found call recursively function
+            # if end of function, return xmlstruct
+            if re.match(begin_pattern, line) != None:
+                print "DEBUG: new tag found -- call recursition here"
+            elif re.match(end_pattern % (tag), line):
+                print "DEBUG: end of tag found, return result here"
+            else:
+                print "DEBUG: nothing to do: nor beginning or end of tag....S"
+        return
+
+
+# HERE START THE REAL FUN WITH LANDESK ;)
 def parseXMLFiles(path):
     cacheXML = {}
     for path, dirs, files in os.walk(path):
@@ -56,33 +97,43 @@ def parseXMLFiles(path):
             fullpath = os.path.join(path, filename)
             basename = filename.split(".")[0]
 
-            try:
-                tree = ET.parse(fullpath)
-                root = tree.getroot() 
+            #check if the XML is a task file
+            if(re.match("SDClientTask.*\.xml", filename) is not None):
+                ldparser = LandeskXMLParser(fullpath)
+                # HERE SOME PARSING -- TODO
+                ldparser.close()
 
-                cacheXML[basename] = {}
-                # 2 types of XML (hash XML and task XML)
-                # extracting elements of interest
-                if(root.find(".//RemoteOperation") is not None):
-                    ros = root.findall(".//RemoteOperation")
-                    for remoteOperation in ros:
-                        cacheXML[basename][remoteOperation.get("Identifier")] = {}
-                        for k in remoteOperation.keys():
-                            v = remoteOperation.get(k)
-                            if(k in cacheXML[basename][remoteOperation.get("Identifier")]):
-                                if(not isinstance(cacheXML[basename][remoteOperation.get("Identifier")], list)):
-                                    cacheXML[basename][remoteOperation.get("Identifier")][k] = [cacheXML[basename][remoteOperation.get("Identifier")][k]]
-                                cacheXML[basename][remoteOperation.get("Identifier")][k].append(v)
-                            else:
-                                cacheXML[basename][remoteOperation.get("Identifier")][k] = v                        
-                else:
-                    # this is to support other XML (mostly hashes)
-                    # but those files are actually invalid XML and this code
-                    # will probably never be executed
-                    print("DEBUG: this file is a hash file (%s)" % fullpath)
-                    print("    Hash files aren't valid XML files and still unsupported by this script")
-            except ET.ParseError:
-                print("ERROR: fail to parse (invalid XML): %s" % (fullpath))
+            # handle XML as a standard valid XML
+            else:
+                try:
+                    tree = ET.parse(fullpath)
+                    root = tree.getroot() 
+
+                    cacheXML[basename] = {}
+                    # 2 types of XML (hash XML and task XML)
+                    # extracting elements of interest
+                    if(root.find(".//RemoteOperation") is not None):
+                        ros = root.findall(".//RemoteOperation")
+                        # loop on remote operation as they describe what Landesk is suppose to do
+                        for remoteOperation in ros:
+                            cacheXML[basename][remoteOperation.get("Identifier")] = {}
+                            for k in remoteOperation.keys():
+                                v = remoteOperation.get(k)
+                                if(k in cacheXML[basename][remoteOperation.get("Identifier")]):
+                                    # handle the case where the same attribute is use for multiple values
+                                    if(not isinstance(cacheXML[basename][remoteOperation.get("Identifier")], list)):
+                                        cacheXML[basename][remoteOperation.get("Identifier")][k] = [cacheXML[basename][remoteOperation.get("Identifier")][k]]
+                                    cacheXML[basename][remoteOperation.get("Identifier")][k].append(v)
+                                else:
+                                    cacheXML[basename][remoteOperation.get("Identifier")][k] = v                        
+                    else:
+                        # this is to support other XML (mostly hashes)
+                        # but those files are actually invalid XML and this code
+                        # will probably never be executed
+                        print("DEBUG: this file is a hash file (%s)" % fullpath)
+                        print("    Hash files aren't valid XML files and still unsupported by this script")
+                except ET.ParseError:
+                    print("ERROR: fail to parse (invalid XML): %s" % (fullpath))
     return cacheXML
 
 def getSQLiteCacheInfo(sqlite_path):
@@ -323,4 +374,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
+# That's all folk ;)
